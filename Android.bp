@@ -1,0 +1,7 @@
+soong_namespace {
+    imports: [
+            "device/qcom/monaco",
+            "vendor/qcom/opensource/monaco/commonsys-intf/display",
+            "vendor/qcom/opensource/monaco/interfaces",
+    ],
+}
