@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  *
+ * Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -30,6 +32,8 @@
 #include "QtiGralloc.h"
 
 #include <log/log.h>
+#include "color_extensions.h"
+
 namespace qtigralloc {
 
 using android::hardware::graphics::mapper::V4_0::IMapper;
@@ -199,6 +203,38 @@ Error encodeYUVPlaneInfoMetadata(qti_ycbcr *in, hidl_vec<uint8_t> *out) {
   return Error::NONE;
 }
 
+Error decodeCustomContentMetadata(hidl_vec<uint8_t> &in, void *out) {
+  static size_t target_size = sizeof(CustomContentMetadata);
+
+  if (in.size() != target_size || !out) {
+    return Error::BAD_VALUE;
+  }
+
+  CustomContentMetadata *c_md_in = reinterpret_cast<CustomContentMetadata *>(in.data());
+  CustomContentMetadata *c_md_out = reinterpret_cast<CustomContentMetadata *>(out);
+
+  if (c_md_in->size > CUSTOM_METADATA_SIZE_BYTES) {
+    return Error::BAD_VALUE;
+  }
+
+  c_md_out->size = c_md_in->size;
+  memcpy(c_md_out->metadataPayload, c_md_in->metadataPayload, c_md_in->size);
+  return Error::NONE;
+}
+
+Error encodeCustomContentMetadata(const void *in, hidl_vec<uint8_t> *out) {
+  static size_t target_size = sizeof(CustomContentMetadata);
+
+  if (!in || !out) {
+    return Error::BAD_VALUE;
+  }
+
+  out->resize(target_size);
+
+  memcpy(out->data(), in, target_size);
+  return Error::NONE;
+}
+
 MetadataType getMetadataType(uint32_t in) {
   switch (in) {
     case QTI_VT_TIMESTAMP:
@@ -251,6 +287,8 @@ MetadataType getMetadataType(uint32_t in) {
       return MetadataType_ColorSpace;
     case QTI_YUV_PLANE_INFO:
       return MetadataType_YuvPlaneInfo;
+    case QTI_CUSTOM_CONTENT_METADATA:
+      return MetadataType_CustomContentMetadata;
     default:
       return MetadataType_Invalid;
   }
@@ -375,6 +413,9 @@ Error get(void *buffer, uint32_t type, void *param) {
     case QTI_YUV_PLANE_INFO:
       err = decodeYUVPlaneInfoMetadata(bytestream, reinterpret_cast<qti_ycbcr *>(param));
       break;
+    case QTI_CUSTOM_CONTENT_METADATA:
+      err = decodeCustomContentMetadata(bytestream, param);
+      break;
     default:
       param = nullptr;
       return Error::UNSUPPORTED;
@@ -445,6 +486,9 @@ Error set(void *buffer, uint32_t type, void *param) {
       break;
     case QTI_VIDEO_TS_INFO:
       err = encodeVideoTimestampInfo(*reinterpret_cast<VideoTimestampInfo *>(param), &bytestream);
+      break;
+    case QTI_CUSTOM_CONTENT_METADATA:
+      err = encodeCustomContentMetadata(param, &bytestream);
       break;
     default:
       param = nullptr;
