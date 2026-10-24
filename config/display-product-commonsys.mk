@@ -8,7 +8,7 @@ PRODUCT_PACKAGES += libdisplayconfig.system \
 
 SOONG_CONFIG_NAMESPACES += qtidisplaycommonsys
 # Soong Keys
-SOONG_CONFIG_qtidisplaycommonsys := displayextension composer3ext qticomposerversion qtilsrenabled
+SOONG_CONFIG_qtidisplaycommonsys := displayextension composer3ext qticomposerversion
 # Soong Values
 
 # displayextension controls global compile time disablement of SF extensions
@@ -19,19 +19,12 @@ SOONG_CONFIG_qtidisplaycommonsys_displayextension := false
 # Once the feature has been consumed, these can be removed
 # and the feature can be enabled/disabled at run time via android
 # properties
-SOONG_CONFIG_qtidisplaycommonsys_composer3ext := ext_none
+SOONG_CONFIG_qtidisplaycommonsys_composer3ext := false
 
 
 ifeq ($(call is-vendor-board-platform,QCOM),true)
     SOONG_CONFIG_qtidisplaycommonsys_displayextension := true
-    ifeq ($(TARGET_DEFINES_XR_CONFIGURATION),true)
-        # Enable LSR api compilation for targets that support LSR
-        SOONG_CONFIG_qtidisplaycommonsys_qtilsrenabled := true
-        SOONG_CONFIG_qtidisplaycommonsys_composer3ext := ext_qcom_lsr
-    else
-        SOONG_CONFIG_qtidisplaycommonsys_qtilsrenabled := false
-        SOONG_CONFIG_qtidisplaycommonsys_composer3ext := ext_qcom
-    endif
+    SOONG_CONFIG_qtidisplaycommonsys_composer3ext := true
 endif
 
 # Enable conditional compilation for HWC's version in the system image.
