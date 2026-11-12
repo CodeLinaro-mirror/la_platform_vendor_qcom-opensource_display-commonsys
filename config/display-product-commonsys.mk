@@ -1,10 +1,14 @@
-PRODUCT_PACKAGES += libdisplayconfig.system \
+PRODUCT_PACKAGES += libdrm \
                     libgralloc.system.qti \
-                    libdrm \
+                    libqdMetaData.system
+
+ifneq ($(TARGET_SDV_ENABLED),true)
+PRODUCT_PACKAGES += libdisplayconfig.system \
                     liblayerext.qti \
                     libsmomoconfig.qti \
                     libcomposerextn.qti \
                     libdisplayconfig.system.qti
+endif # TARGET_SDV_ENABLED
 
 SOONG_CONFIG_NAMESPACES += qtidisplaycommonsys
 # Soong Keys
